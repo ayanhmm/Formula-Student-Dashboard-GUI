@@ -8,3 +8,8 @@ pre requirements::
 (2)PIL - pip install pillow
 
 (3)PANDAS - pip install pandas , pip install openpyxl
+
+install fonts- 
+https://fontmeme.com/polices/police-caution/
+https://fontmeme.com/polices/police-racing-numbers/#previewtool
+https://fontmeme.com/polices/police-race-space/

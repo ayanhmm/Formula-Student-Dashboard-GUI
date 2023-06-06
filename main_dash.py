@@ -7,74 +7,94 @@ import time
 import math
 import logging
 #----------------------------------------------Configure logging----------------------------------------------
-logging.basicConfig(filename='data.log', level=logging.INFO, format='%(asctime)s %(message)s')
+# logging.basicConfig(filename='data.log', level=logging.INFO, format='%(asctime)s %(message)s')
+#to conserve primary memory of dashboard screen,data is logged diectly at pit
 
 # ----------------------------------------------Create the root window----------------------------------------------
 root = tk.Tk()
 root.title("TDR - SDC")
-
 #----------------------------------------------bg of root window----------------------------------------------
 # Get the screen width and height
 screen_width, screen_height = root.winfo_screenwidth(), root.winfo_screenheight()
+# screen_height = int(round((screen_height*2)/7, 0))
+# screen_width = int(round((screen_width*5)/15, 0))
 print(screen_width, screen_height)
-screen_width = screen_width - 20
-screen_height = screen_height -70
+
 root.geometry("%dx%d" % (screen_width, screen_height))
+
 #make bg dimentions equal to window
 bg_image_pg1 = Image.open("new dash.png")
 if bg_image_pg1.size != (screen_width, screen_height):
     bg_image_pg1 = bg_image_pg1.resize((screen_width, screen_height), Image.ANTIALIAS)
 bg_image_pg1 = ImageTk.PhotoImage(bg_image_pg1)
-#Adding background image in form of a label
-bg_label_pg1 = ttk.Label(root, image = bg_image_pg1)
-bg_label_pg1.place(relx=0.5, rely=0.5, anchor="center")
-bg_label_pg1.image = bg_image_pg1
 
-#----------------------------------------------CREATE DATA DISPLAY LABELS----------------------------------------------
-# Create label to display BATTERY VOLTAGE
-label_data_pack_voltage = tk.Label(root, text="BV", font=("Arial black", 10), bg="black", fg="red")
-label_data_pack_voltage.place(relx=0.13, rely=0.18, anchor="center")
-# Create label to display ACCUMULATOR TEMPERATURE
-label_data_throttle = tk.Label(root, text="AT", font=("Arial black", 10), bg="black", fg="red")
-label_data_throttle.place(relx=0.4, rely=0.18, anchor="center")
-# Create label to display BATTERY CURRENT
-label_data_pack_current = tk.Label(root, text="BC", font=("Arial black", 10), bg="black", fg="red")
-label_data_pack_current.place(relx=0.66, rely=0.18, anchor="center")
-# Create label to display RPM
-label_data_rpm = tk.Label(root, text="RPM", font=("Arial black", 15), bg="black", fg="red")
-label_data_rpm.place(relx=0.62, rely=0.72, anchor="center")
-# Create label to display speed
-label_data_speed = tk.Label(root, text="SPD", font=("Arial black", 20), bg="black", fg="red")
-label_data_speed.place(relx=0.83, rely=0.66, anchor="center")
-# Create label to display brake pressure
-label_data_charge = tk.Label(root, text="BP", font=("Arial black", 10), bg="black", fg="red")
-label_data_charge.place(relx=0.46, rely=0.794, anchor="center")
-# Create label to display fluid speed
-label_data_battery_max_temperature = tk.Label(root, text="FS", font=("Arial black", 10), bg="black", fg="red")
-label_data_battery_max_temperature.place(relx=0.385, rely=0.89, anchor="center")
+##Adding background image in form of a label
+##removed since adding blinking caution button is easiar in canvas
+# bg_label_pg1 = ttk.Label(root, image = bg_image_pg1)
+# bg_label_pg1.place(relx=0, rely=0, anchor="nw")
+# bg_label_pg1.image = bg_image_pg1
+
+#Adding background image in form of a canvas
+bg_canvas_pg1 = tk.Canvas(root, width=screen_width, height=screen_height,bg="red")
+bg_canvas_pg1.place(relx=0, rely=0, anchor="nw")
+bg_canvas_pg1.create_image(0, 0, anchor="nw", image=bg_image_pg1)
+
+#----------------------------------------------CREATE DATA DISPLAY LABELS for circular display----------------------------------------------
+# Create label to display pack VOLTAGE
+display_labels_font_style = "RACE SPACE REGULAR"
+circular_display_labels_font_color = "Orange Red"
+list_display_labels_font_color = "Orange Red"
+
+label_data_pack_voltage = tk.Label(bg_canvas_pg1, text="BV", font=(display_labels_font_style, int(round((screen_width * 1)/45, 0))), bg="black", fg=circular_display_labels_font_color)
+label_data_pack_voltage.place(relx=0.15, rely=0.2, anchor="center")
+
+# Create label to display throttle
+label_data_throttle = tk.Label(bg_canvas_pg1, text="AT", font=(display_labels_font_style, int(round((screen_width * 1)/45, 0))), bg="black", fg=circular_display_labels_font_color)
+label_data_throttle.place(relx=0.55, rely=0.2, anchor="center")
+# Create label to display pack CURRENT
+label_data_pack_current = tk.Label(bg_canvas_pg1, text="BC", font=(display_labels_font_style, int(round((screen_width * 1)/45, 0))), bg="black", fg=circular_display_labels_font_color)
+label_data_pack_current.place(relx=0.35, rely=0.2, anchor="center")
+
 # Create label to display MOTOR TEMP
-label_data_motor_temperature = tk.Label(root, text="MT", font=("Arial black", 10), bg="black", fg="red")
-label_data_motor_temperature.place(relx=0.24, rely=0.46, anchor="center")
+label_data_motor_temperature = tk.Label(bg_canvas_pg1, text="MT", font=(display_labels_font_style, int(round((screen_width * 1)/45, 0))), bg="black", fg=circular_display_labels_font_color)
+label_data_motor_temperature.place(relx=0.88, rely=0.2, anchor="center")
 # Create label to display MOTOR controller TEMP
-label_data_motor_controller_temperature = tk.Label(root, text="MCT", font=("Arial black", 10), bg="black", fg="red")
-label_data_motor_controller_temperature.place(relx=0.54, rely=0.46, anchor="center")
-# Create label to display lv battery status
-label_data_mfr = tk.Label(root, text="LVBS", font=("Arial black", 10), bg="black", fg="red")
-label_data_mfr.place(relx=0.48, rely=0.71, anchor="center")
-# Create label to display THERMISTOR MAX TEMP
-label_data_battery_min_temperature = tk.Label(root, text="TMT", font=("Arial black", 10), bg="black", fg="red")
-label_data_battery_min_temperature.place(relx=0.55, rely=0.975, anchor="center")
-# Create label to display BPS
-label_data_bps = tk.Label(root, text="TMT", font=("Arial black", 10), bg="black", fg="red")
-label_data_bps.place(relx=0.55, rely=0.975, anchor="center")  
+label_data_motor_controller_temperature = tk.Label(bg_canvas_pg1, text="MCT", font=(display_labels_font_style, int(round((screen_width * 1)/45, 0))), bg="black", fg=circular_display_labels_font_color)
+label_data_motor_controller_temperature.place(relx=0.72, rely=0.2, anchor="center")
 
+#----------------------------------------------CREATE DATA DISPLAY LABELS for list display----------------------------------------------
+# Create label to display charge
+label_data_charge = tk.Label(bg_canvas_pg1, text="BP", font=(display_labels_font_style, int(round((screen_width * 1)/60, 0))), bg="black", fg=list_display_labels_font_color)
+label_data_charge.place(relx=0.27, rely=0.490, anchor="center")
+# Create label to display battery_max_temperature
+label_data_battery_max_temperature = tk.Label(bg_canvas_pg1, text="FS", font=(display_labels_font_style, int(round((screen_width * 1)/60, 0))), bg="black", fg=list_display_labels_font_color)
+label_data_battery_max_temperature.place(relx=0.369, rely=0.57, anchor="center")
+
+# Create label to display mfr
+label_data_mfr = tk.Label(bg_canvas_pg1, text="LVBS", font=(display_labels_font_style, int(round((screen_width * 1)/60, 0))), bg="black", fg=list_display_labels_font_color)
+label_data_mfr.place(relx=0.22, rely=0.420, anchor="center")
+# Create label to display battery_min_temperature
+label_data_battery_min_temperature = tk.Label(bg_canvas_pg1, text="TMT", font=(display_labels_font_style, int(round((screen_width * 1)/60, 0))), bg="black", fg=list_display_labels_font_color)
+label_data_battery_min_temperature.place(relx=0.38, rely=0.63, anchor="center")
+# Create label to display BPS
+label_data_bps = tk.Label(bg_canvas_pg1, text="TMT", font=(display_labels_font_style, int(round((screen_width * 1)/60, 0))), bg="black", fg=list_display_labels_font_color)
+label_data_bps.place(relx=0.71, rely=0.420, anchor="center")  
+
+#----------------------------------------------CREATE RPM and speed DISPLAY LABELS----------------------------------------------
+#become obsolete after addition of speedometer and rpm dial
+# Create label to display RPM
+label_data_rpm = tk.Label(bg_canvas_pg1, text="RPM", font=(display_labels_font_style, int(round((screen_width * 1)/60, 0))), bg="black", fg=list_display_labels_font_color)
+label_data_rpm.place(relx=0.67, rely=0.775, anchor="center")
+# Create label to display speed
+label_data_speed = tk.Label(bg_canvas_pg1, text="SPD", font=(display_labels_font_style,int(round((screen_width * 1)/20, 0))), bg="black", fg=list_display_labels_font_color)
+label_data_speed.place(relx=0.83, rely=0.74, anchor="center")
 #----------------------------------------------CREATE Fault DISPLAY LABELS----------------------------------------------
 # Create label to display MOTOR controller faults
-label_data_motor_controller_fault = tk.Label(root, text="FAULT", font=("Arial black", 10), bg="black", fg="red")
-label_data_motor_controller_fault.place(relx=0.54, rely=0.46, anchor="center")
+label_data_motor_controller_fault = tk.Label(bg_canvas_pg1, text="FAULT", font=(display_labels_font_style, int(round((screen_width * 1)/60, 0))), bg="black", fg=list_display_labels_font_color)
+label_data_motor_controller_fault.place(relx=0.14, rely=0.82, anchor="center")
 # Create label to display bms faults
-label_data_bms_fault = tk.Label(root, text="FAULT", font=("Arial black", 10), bg="black", fg="red")
-label_data_bms_fault.place(relx=0.54, rely=0.46, anchor="center")
+label_data_bms_fault = tk.Label(bg_canvas_pg1, text="FAULT", font=(display_labels_font_style, int(round((screen_width * 1)/60, 0))), bg="black", fg=list_display_labels_font_color)
+label_data_bms_fault.place(relx=0.34, rely=0.82, anchor="center")
 
 #----------------------------------------------Open serial connection to Arduino----------------------------------------------
 #ser = serial.Serial('/dev/ttyUSB0', 9600)
@@ -83,11 +103,21 @@ label_data_bms_fault.place(relx=0.54, rely=0.46, anchor="center")
 def update_data():
     #obtain raw data from arduino
     #raw_data  = ser.readline().decode()
-    raw_data = '0,1,2,3,4,5,6,7,8,9,10,no mc fault; no bms fault a : no bms fault b'
+    raw_data = '0,1,2,3,4,5,6,7,8,9,10,no mc fault a :no mc fault b:no mc fault c:no mc fault d; no bms fault a : no bms fault b: no bms fault c: no bms fault d'
     
     #split raw data into list of datas from different sensors
     data = raw_data.split(",")
     fault_list = data[-1].split(";")
+    
+    #converting faults to a more organised form
+    fault_list = data[-1].split(";")
+    bms_faults_string_list = fault_list[-1].split(";")
+    bms_faults_list = bms_faults_string_list[0].split(":")
+    bms_faults_string_arranged = '\n'.join(bms_faults_list)
+    
+    mc_faults_string_list = fault_list[0].split(";")
+    mc_faults_list = mc_faults_string_list[0].split(":")
+    mc_faults_string_arranged = '\n'.join(mc_faults_list)
     
     #calculate speed using erpm and radius of tyres
     erpm = int(data[2])
@@ -99,9 +129,11 @@ def update_data():
     #prevent decoding error when "connection with arduino established" is the data recieved from arduino
     if len(data) == 12:
         #----------------------------------------------data loggging----------------------------------------------
-        data_to_be_logged = f"\nmotor_temperature: {data[0]},motor_controller_temperature: {data[1]},rpm: {data[2]},throttle: {data[3]},\npack_current: {data[4]},pack_voltage: {data[5]},charge: {data[6]},\nbattery_max_temperature: {data[7]},label_data_battery_min_temperature: {data[8]},\nmfr: {data[9]},bps: {data[10]},speed: {current_vehicle_calculated_speed},\nmc_faults: {fault_list[0]},\nbms_faults: {fault_list[1]}\n"
-        logging.info(data_to_be_logged)
-        logging.info(current_vehicle_calculated_speed)
+        # data_to_be_logged = f"\nmotor_temperature: {data[0]},motor_controller_temperature: {data[1]},rpm: {data[2]},throttle: {data[3]},\npack_current: {data[4]},pack_voltage: {data[5]},charge: {data[6]},\nbattery_max_temperature: {data[7]},label_data_battery_min_temperature: {data[8]},\nmfr: {data[9]},bps: {data[10]},speed: {current_vehicle_calculated_speed},\nmc_faults: {fault_list[0]},\nbms_faults: {fault_list[1]}\n"
+        # logging.info(data_to_be_logged)
+        # logging.info(current_vehicle_calculated_speed)
+        # data logged directly at pit
+        
         
         #----------------------------------------------display values update----------------------------------------------
         label_data_motor_temperature.config(text = data[0])
@@ -119,8 +151,8 @@ def update_data():
         label_data_speed.config(text = current_vehicle_calculated_speed)
         
         #----------------------------------------------display faults update----------------------------------------------
-        label_data_motor_controller_fault.config(text = fault_list[0])
-        label_data_bms_fault.config(text = fault_list[1])
+        label_data_motor_controller_fault.config(text = mc_faults_string_arranged)
+        label_data_bms_fault.config(text = bms_faults_string_arranged)
 
         #----------------------------------------------repead the update data function after 100ms----------------------------------------------
         root.after(100, update_data) 
