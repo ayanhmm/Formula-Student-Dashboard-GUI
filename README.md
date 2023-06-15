@@ -9,6 +9,10 @@ pre requirements::
 
 (3)PANDAS - pip install pandas , pip install openpyxl
 
+(4)Read arduino data -   pip install p
+                         pip install pyserial pySerialTransfer
+
+
 install fonts- 
 https://fontmeme.com/polices/police-caution/
 https://fontmeme.com/polices/police-racing-numbers/#previewtool

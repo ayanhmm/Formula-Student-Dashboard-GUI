@@ -12,8 +12,11 @@ import logging
 
 # ----------------------------------------------Create the root window----------------------------------------------
 root = tk.Tk()
-root.title("TDR - SDC")
+#root.title("TDR - SDC")
+#root.attributes('-fullscreen', True)
+
 #----------------------------------------------bg of root window----------------------------------------------
+
 # Get the screen width and height
 screen_width, screen_height = root.winfo_screenwidth(), root.winfo_screenheight()
 # screen_height = int(round((screen_height*2)/7, 0))
@@ -21,6 +24,7 @@ screen_width, screen_height = root.winfo_screenwidth(), root.winfo_screenheight(
 print(screen_width, screen_height)
 
 root.geometry("%dx%d" % (screen_width, screen_height))
+
 
 #make bg dimentions equal to window
 bg_image_pg1 = Image.open("new dash.png")
@@ -38,6 +42,8 @@ bg_image_pg1 = ImageTk.PhotoImage(bg_image_pg1)
 bg_canvas_pg1 = tk.Canvas(root, width=screen_width, height=screen_height,bg="red")
 bg_canvas_pg1.place(relx=0, rely=0, anchor="nw")
 bg_canvas_pg1.create_image(0, 0, anchor="nw", image=bg_image_pg1)
+
+root.attributes('-fullscreen', True)
 
 #----------------------------------------------CREATE DATA DISPLAY LABELS for circular display----------------------------------------------
 # Create label to display pack VOLTAGE
@@ -97,13 +103,13 @@ label_data_bms_fault = tk.Label(bg_canvas_pg1, text="FAULT", font=(display_label
 label_data_bms_fault.place(relx=0.34, rely=0.82, anchor="center")
 
 #----------------------------------------------Open serial connection to Arduino----------------------------------------------
-#ser = serial.Serial('/dev/ttyUSB0', 9600)
+ser = serial.Serial('/dev/ttyACM0', 9600)
 
 #----------------------------------------------data updation on main window----------------------------------------------
 def update_data():
     #obtain raw data from arduino
-    #raw_data  = ser.readline().decode()
-    raw_data = '0,1,2,3,4,5,6,7,8,9,10,no mc fault a :no mc fault b:no mc fault c:no mc fault d; no bms fault a : no bms fault b: no bms fault c: no bms fault d'
+    raw_data  = ser.readline().decode()
+    #raw_data = '0,1,2,3,4,5,6,7,8,9,10,no mc fault a :no mc fault b:no mc fault c:no mc fault d; no bms fault a : no bms fault b: no bms fault c: no bms fault d'
     
     #split raw data into list of datas from different sensors
     data = raw_data.split(",")
@@ -119,22 +125,22 @@ def update_data():
     mc_faults_list = mc_faults_string_list[0].split(":")
     mc_faults_string_arranged = '\n'.join(mc_faults_list)
     
-    #calculate speed using erpm and radius of tyres
-    erpm = int(data[2])
-    tyre_radius = 1
-    tyre_circumference = 2*3.14*tyre_radius
-    current_vehicle_calculated_speed = ((erpm/10)*tyre_circumference*60)
-    current_vehicle_calculated_speed = int(round(current_vehicle_calculated_speed, 0))
+
     
     #prevent decoding error when "connection with arduino established" is the data recieved from arduino
-    if len(data) == 12:
+    if len(data) <= 10:
         #----------------------------------------------data loggging----------------------------------------------
         # data_to_be_logged = f"\nmotor_temperature: {data[0]},motor_controller_temperature: {data[1]},rpm: {data[2]},throttle: {data[3]},\npack_current: {data[4]},pack_voltage: {data[5]},charge: {data[6]},\nbattery_max_temperature: {data[7]},label_data_battery_min_temperature: {data[8]},\nmfr: {data[9]},bps: {data[10]},speed: {current_vehicle_calculated_speed},\nmc_faults: {fault_list[0]},\nbms_faults: {fault_list[1]}\n"
         # logging.info(data_to_be_logged)
         # logging.info(current_vehicle_calculated_speed)
         # data logged directly at pit
         
-        
+        #calculate speed using erpm and radius of tyres
+        erpm = int(data[2])
+        tyre_radius = 1
+        tyre_circumference = 2*3.14*tyre_radius
+        current_vehicle_calculated_speed = ((erpm/10)*tyre_circumference*60)
+        current_vehicle_calculated_speed = int(round(current_vehicle_calculated_speed, 0))
         #----------------------------------------------display values update----------------------------------------------
         label_data_motor_temperature.config(text = data[0])
         label_data_motor_controller_temperature.config(text = data[1])
