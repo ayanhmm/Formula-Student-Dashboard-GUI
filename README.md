@@ -54,4 +54,4 @@ The following data is being displayed on the dashboard screen.It is to be notes 
 13. Motor Controller Input Current
 14. Motor Controller FAULTS
 15. BMS FAULTS
-<img src="./resources/readme images/working ui.png" alt="UI display" width="300"/>
+<img src="./resources/readme images/working ui.png" alt="UI display" />
